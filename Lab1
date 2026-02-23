@@ -1,0 +1,51 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+def poisson_generator(lmbda, size, seed=None):
+    if seed is not None:
+        np.random.seed(seed)
+    results = []
+    for _ in range(size):
+        X, S = -1, 1
+        q = np.exp(-lmbda)
+        while S > q:
+            U = np.random.uniform(0, 1)
+            S *= U
+            X += 1
+        results.append(X)
+    return results
+
+def normal_generator(mu, sigma, size, seed=None):
+    if seed is not None:
+        np.random.seed(seed)
+    results = []
+    for _ in range(size // 2):
+        U1, U2 = np.random.uniform(0, 1, 2)
+        Z1 = np.sqrt(-2 * np.log(U1)) * np.cos(2 * np.pi * U2)
+        Z2 = np.sqrt(-2 * np.log(U1)) * np.sin(2 * np.pi * U2)
+        results.extend([mu + sigma * Z1, mu + sigma * Z2])
+    if size % 2:
+        results.append(mu + sigma * np.sqrt(-2 * np.log(np.random.uniform())) * np.cos(2 * np.pi * np.random.uniform()))
+    return results
+
+def plot_histogram(data, title, bins=30):
+    plt.hist(data, bins=bins, alpha=0.7, color='b', edgecolor='black', density=True)
+    plt.title(title)
+    plt.xlabel('Wartości')
+    plt.ylabel('Prawdopodobieństwo')
+    plt.grid(True)
+    plt.show()
+
+data_size = int(input("Podaj liczbę próbek (data_size): "))
+lambda_poisson = float(input("Podaj wartość λ dla rozkładu Poissona: "))
+mu_normal = float(input("Podaj wartość μ dla rozkładu normalnego: "))
+sigma_normal = float(input("Podaj wartość σ dla rozkładu normalnego: "))
+
+seed_input = input("Podaj seed (lub naciśnij Enter dla losowości): ")
+seed = int(seed_input) if seed_input.isdigit() else None
+
+data_poisson = poisson_generator(lambda_poisson, data_size, seed)
+data_normal = normal_generator(mu_normal, sigma_normal, data_size, seed)
+
+plot_histogram(data_poisson, f'Rozkład Poissona (λ={lambda_poisson})')
+plot_histogram(data_normal, f'Rozkład Normalny (μ={mu_normal}, σ={sigma_normal})')
